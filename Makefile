@@ -22,7 +22,7 @@ flash-ftdi: all
 	stm32flash -g 0x0 -w main.bin /dev/ttyUSB0
 
 flash-usb: all
-	dfu-util -d 0483:df11 -a 0 -s 0x08000000 -R -D main.bin
+	dfu-util -d 0483:df11 -a 0 -s 0x08000000:leave -D main.bin
 
 list:
 	dfu-util -l
