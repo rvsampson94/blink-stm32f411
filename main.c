@@ -31,6 +31,20 @@ void SysClockConfig(void)
     while(!(RCC->CFGR & (2 << 2)));
 }
 
+void TIM9Config(void)
+{
+    // Enable timer clock
+    RCC->APB2ENR |= RCC_APB2ENR_TIM9EN;
+    
+    //Set the prescalar and the ARR register
+    TIM9->PSC = 50 - 1;
+    TIM9->ARR = 0xFFFF;
+
+    // Enable timer and wait for update flag to set
+    TIM9->CR1 |= (1<<0); // Enable counter
+    while (!(TIM9->SR & (1<<0)));
+}
+
 void GPIOInit(void)
 {
     // enable gpio clock
@@ -44,21 +58,29 @@ void GPIOInit(void)
     GPIOC->OSPEEDR = 0;
 }
 
-void delay(uint32_t time)
+void delay_us(uint16_t us)
 {
-    while (time--);
+    TIM9->CNT = 0;
+    while(TIM9->CNT < us);
+}
+
+void delay_ms(uint16_t ms)
+{
+    for (uint16_t i = 0; i < ms; i++)
+        delay_us(1000);
 }
 
 int main(void) {
 
     SysClockConfig();
     GPIOInit();
+    TIM9Config();
 
     while(1) {
         GPIOC->BSRR |= (1UL << 13);
-        delay(1000000);
+        delay_ms(500);
         GPIOC->BSRR |= ((1UL << 13) << 16);
-        delay(1000000);
+        delay_ms(500);
     }
     return 0;
 }
